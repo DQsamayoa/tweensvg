@@ -2,7 +2,9 @@
 from TweenSVG import tween_svgs_from_filenames
 from xml.etree import ElementTree as ElementTreeModule
 
-filenames = ["frame1.svg", "frame2.svg"]
+#filenames = ["frame1.svg", "frame2.svg"]
+#filenames = ["test_inputs/test1/frame1.svg", "test_inputs/test1/frame2.svg"]
+filenames = ["test_inputs/dot1/frame1.svg", "test_inputs/dot1/frame2.svg"]
 
 count = 0
 for tween in tween_svgs_from_filenames(filenames):
