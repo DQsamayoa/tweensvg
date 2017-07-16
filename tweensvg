@@ -10,7 +10,8 @@ parser.add_argument('--group-matching', action='store_true',
 parser.add_argument('--duration', default='5s', help='Duration of the animation')
 parser.add_argument('--fadein-late', action='store_true', help='Only animate fade-ins after all other animations')
 parser.add_argument('--fadeout-early', action='store_true', help='Animate fade-outs before all other animations')
-parser.add_argument('keyframe_files', metavar='keyframe-files', help='List of filenames of keyframes', nargs='+')
+parser.add_argument('--path-slice', action='store_true', help='If a path changes topology, slice it into multiple smaller paths such that it can be tweened.')
+parser.add_argument('keyframe_files', metavar='keyframe-file', help='List of filenames of keyframes', nargs='+')
 
 args = parser.parse_args()
 

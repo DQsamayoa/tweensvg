@@ -6,6 +6,8 @@ from xml.etree.ElementTree import ElementTree # Dr Watson
 from xml.etree.ElementTree import Element
 import re
 
+from TweenSVG.SVGUtils import SVGUtils as SVU
+
 ElementTreeModule.register_namespace('', "http://www.w3.org/2000/svg")
 
 def pairwise(iterable):
@@ -19,29 +21,6 @@ def _tagname(tag):
         raise ValueError("Not a valid [namespaced] xml tag name")
     return m.groups()[0]
 
-def _value_unit(string):
-    m = re.match(r"([\d.]+)([^\d]*)", string)
-    if not m:
-        raise ValueError("invalid dimension value '%s'" % (string))
-    g = m.groups()
-    return float(g[0]), g[1]
-
-def _to_unit_val(value, unit):
-    return "%f%s"%(value, unit)
-
-def _viewbox_vals(string):
-    m = re.match(r"(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*)", string)
-    if not m:
-        raise ValueError("invalid viewbox string")
-    groups = m.groups()
-    return tuple(float(groups[i]) for i in range(4))
-
-def _to_viewbox_val(left, top, width, height):
-    return "%f %f %f %f" % (left, top, width, height)
-
-def _transforms(string):
-    matches = re.findall(r"(translate|rotate|scale|matrix|skew(?:x|y))\(([^)]+)\)", string)
-    return {transform: args for transform, args in matches}
 
 class Tweener():
     def __init__(self, duration="5s", group_matching=False, fadein_late=False, fadeout_early=False):
@@ -69,14 +48,14 @@ class Tweener():
         self.keyframes.append(keyframe)
         root_attrs = keyframe.getroot().attrib
         if 'width' in root_attrs:
-            width, widthunit = _value_unit(root_attrs['width'])
+            width, widthunit = SVU.value_unit(root_attrs['width'])
             if self.widthunit is None or self.widthunit == widthunit:
                 self.widthunit = widthunit
             else:
                 raise ValueError("Mixed units in keyframe dimensions")
             self.maxwidth = max(self.maxwidth, width)
         if 'height' in root_attrs:
-            height, heightunit = _value_unit(root_attrs['height'])
+            height, heightunit = SVU.value_unit(root_attrs['height'])
             if self.heightunit is None or self.heightunit == heightunit:
                 self.heightunit = heightunit
             else:
@@ -85,7 +64,7 @@ class Tweener():
 
         if 'viewBox' in root_attrs:
             vb = root_attrs['viewBox']
-            left, top, width, height = _viewbox_vals(vb)
+            left, top, width, height = SVU.viewbox_vals(vb)
             self.min_vb_top = min(self.min_vb_top, top)
             self.min_vb_left = min(self.min_vb_left, left)
             self.max_vb_width = max(self.max_vb_width, width)
@@ -127,10 +106,21 @@ class Tweener():
             dur = self.duration
         for attr, from_val in from_attrs.items():
             to_val = to_attrs[attr]
+            # For path sequences, make the paths tweenable
+            if attr == 'd':
+                from_path = SVU.path_parts(from_val)
+                to_path = SVU.path_parts(to_val)
+                print("Frompath: %r" % (from_path))
+                print("Topath: %r" % (to_path))
+                from_paths, to_paths, from_id, to_id = SVU.split_paths_for_tweening(from_path, to_path)
+                from_paths, to_paths = SVU.normalize_path_splits(from_paths, to_paths, from_id, to_id)
+                from_val = ' '.join(SVU.path_string(p) for p in from_paths)
+                to_val = ' '.join(SVU.path_string(p) for p in to_paths)
+
             if attr == 'transform':
                 # Transforms are handled with animateTransform tags
-                from_transforms = _transforms(from_val)
-                to_transforms = _transforms(to_val)
+                from_transforms = SVU.transforms(from_val)
+                to_transforms = SVU.transforms(to_val)
                 for trans_type, from_args in from_transforms.items():
                     if trans_type in to_transforms:
                         to_args = to_transforms[trans_type]
@@ -149,7 +139,7 @@ class Tweener():
                             yield animtag
             else:
                 animtag = Element("animate",
-                     {
+                    {
                         "attributeType": "XML",
                         "attributeName": attr,
                         "from": from_val,
@@ -262,9 +252,9 @@ class Tweener():
 
     def _tween(self, from_svg, to_svg, extras=None):
         element = self._tween_elements(from_svg.getroot(), to_svg.getroot())
-        element.attrib['width'] = _to_unit_val(self.maxwidth, self.widthunit)
-        element.attrib['height'] = _to_unit_val(self.maxheight, self.heightunit)
-        element.attrib['viewBox'] = _to_viewbox_val(self.min_vb_left, self.min_vb_top, self.max_vb_width, self.max_vb_height)
+        element.attrib['width'] = SVU.to_unit_val(self.maxwidth, self.widthunit)
+        element.attrib['height'] = SVU.to_unit_val(self.maxheight, self.heightunit)
+        element.attrib['viewBox'] = SVU.to_viewbox_val(self.min_vb_left, self.min_vb_top, self.max_vb_width, self.max_vb_height)
         if extras is not None:
             for extra in extras:
                 element.append(extra)
