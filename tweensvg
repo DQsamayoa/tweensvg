@@ -8,6 +8,8 @@ parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--group-matching', action='store_true',
                     help='Animate sub-elements of matching groups even if the subelements don\'t match')
 parser.add_argument('--duration', default='5s', help='Duration of the animation')
+parser.add_argument('--fadein-late', action='store_true', help='Only animate fade-ins after all other animations')
+parser.add_argument('--fadeout-early', action='store_true', help='Animate fade-outs before all other animations')
 parser.add_argument('keyframe_files', metavar='keyframe-files', help='List of filenames of keyframes', nargs='+')
 
 args = parser.parse_args()
@@ -19,6 +21,6 @@ if len(args.keyframe_files) < 2:
     sys.exit(INVALID_ARGS)
 
 count = 0
-for tween in tween_svgs_from_filenames(args.keyframe_files, duration=args.duration, group_matching=args.group_matching):
+for tween in tween_svgs_from_filenames(args.keyframe_files, duration=args.duration, group_matching=args.group_matching, fadein_late=args.fadein_late, fadeout_early=args.fadeout_early):
     tween.write("tween%04d.svg" % (count), xml_declaration=True,encoding='utf-8', method='xml', default_namespace="http://www.w3.org/2000/svg")
     count += 1
