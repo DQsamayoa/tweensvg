@@ -112,7 +112,6 @@ class SVGUtils():
                 pos = args[5], args[6]
             if command == 'a':
                 pos = pos[0] + args[5], pos[1] + args[6]
-        print("Path: %r ends at %r" % (parts, pos))
         return pos
 
     def path_to_point(parts, point):

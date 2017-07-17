@@ -110,8 +110,6 @@ class Tweener():
             if attr == 'd':
                 from_path = SVU.path_parts(from_val)
                 to_path = SVU.path_parts(to_val)
-                print("Frompath: %r" % (from_path))
-                print("Topath: %r" % (to_path))
                 from_paths, to_paths, from_id, to_id = SVU.split_paths_for_tweening(from_path, to_path)
                 from_paths, to_paths = SVU.normalize_path_splits(from_paths, to_paths, from_id, to_id)
                 from_val = ' '.join(SVU.path_string(p) for p in from_paths)
@@ -161,28 +159,33 @@ class Tweener():
         to_attr = {"opacity": toval}
         return self._animate_tags_custom(from_attr, to_attr, begin=begin, dur=dur)
 
-    def _fade_in_animation(self, opacity):
-        return self._fade_animation(1, opacity, begin="tween_fadein.begin", dur=self.fadein_duration)
+    def _fade_in_animation(self, opacity, begin="tween_fadein.begin"):
+        return self._fade_animation(1, opacity, begin=begin, dur=self.fadein_duration)
 
-    def _fade_out_animation(self, opacity):
-        return self._fade_animation(-1, opacity, begin="tween_fadeout.begin", dur=self.fadeout_duration)
+    def _fade_out_animation(self, opacity, begin="tween_fadeout.begin"):
+        return self._fade_animation(-1, opacity, begin=begin, dur=self.fadeout_duration)
 
-    def _fade_out_element(self, element):
+    def _fade_out_element(self, element, transition_phase=False):
         opacity = element.attrib.get("opacity", "1")
         element.attrib['opacity'] = opacity
-        return self._fade_out_animation(opacity)
+        if transition_phase:
+            return self._fade_out_animation(opacity, begin="tween_transition.begin")
+        else:
+            return self._fade_out_animation(opacity)
 
 
-    def _fade_in_element(self, element):
+    def _fade_in_element(self, element, transition_phase=False):
         opacity = element.attrib.get("opacity", "1")
         element.attrib['opacity'] = "0"
-        return self._fade_in_animation(opacity)
+        if transition_phase:
+            return self._fade_in_animation(opacity, begin="tween_transition.begin")
+        else:
+            return self._fade_in_animation(opacity)
 
     def _tween_elements(self, from_element: Element, to_element: Element, group_merge=False):
         result_element = Element(from_element.tag, from_element.attrib)
         result_element.text = from_element.text
         result_element.tail = from_element.tail
-
 
         done_ids = []
         merged_to_elements = []
@@ -191,6 +194,7 @@ class Tweener():
             group_merge_next = False
             eid = sub_from_element.attrib.get('id', None)
             tweened_sub_element = None
+            tagname = sub_from_element.tag
             if eid is None:
                 if not group_merge:
                     # Cannot tween, just fade out
@@ -216,7 +220,6 @@ class Tweener():
                         anim_tags = self._fade_out_element(tweened_sub_element)
             else:
                 done_ids.append(eid)
-                tagname = sub_from_element.tag
                 if self.group_matching and _tagname(tagname) == 'g':
                     # Match children without IDs in the order they appear in the file
                     group_merge_next = True
@@ -235,6 +238,32 @@ class Tweener():
                     from_attrs, to_attrs = self._attr_diff(sub_from_element.attrib, sub_to_element.attrib)
                     anim_tags = self._animate_tags(from_attrs, to_attrs)
                     tweened_sub_element = self._tween_elements(sub_from_element, sub_to_element, group_merge=group_merge_next)
+            double_tween = False
+            if _tagname(tagname) == "text":
+                # This is a text element
+                if sub_from_element.text != sub_to_element.text:
+                    # Oh no! text needs tweening
+                    double_tween = True
+            if double_tween:
+                # Take a copy of the tweened item
+                tweened_sub_element_2 = deepcopy(tweened_sub_element)
+                tweened_sub_element_2.text = sub_to_element.text
+                # apply the animation now
+                # Also fade out the old element:
+                for anim_tag in anim_tags:
+                    tweened_sub_element.append(anim_tag)
+                    tweened_sub_element_2.append(anim_tag)
+                for anim_tag in self._fade_out_element(tweened_sub_element, transition_phase=True):
+                    tweened_sub_element.append(anim_tag)
+                for anim_tag in self._fade_in_element(tweened_sub_element_2, transition_phase=True):
+                    tweened_sub_element_2.append(anim_tag)
+                anim_tags = [] # clear the animation tags, so we don't add them again later
+                # Create a group for the two cross-faded elements
+                group = Element("g")
+                group.append(tweened_sub_element)
+                group.append(tweened_sub_element_2)
+                tweened_sub_element = group
+
             for anim_tag in anim_tags:
                 tweened_sub_element.append(anim_tag)
             result_element.append(tweened_sub_element)
@@ -303,8 +332,6 @@ class Tweener():
         if self.fadein_late:    
             fadein_attribs['begin'] = "tween_transition.end"
 
-        #if not self.fadein_late and not self.fadeout_early:
-        #    transition_attribs['repeatCount'] = 'indefinite'
         start_fadein = Element("animate", fadein_attribs)
         start_transition = Element("animate", transition_attribs)
         start_fadeout = Element("animate", fadeout_attribs)
