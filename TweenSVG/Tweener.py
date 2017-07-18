@@ -198,8 +198,8 @@ class Tweener():
             if eid is None:
                 if not group_merge:
                     # Cannot tween, just fade out
-                    anim_tags = self._fade_out_animation()
                     tweened_sub_element = deepcopy(sub_from_element)
+                    anim_tags = self._fade_out_element(tweened_sub_element)
                 else:
                     found = False
                     # Try to merge this with something from the "to" elements
