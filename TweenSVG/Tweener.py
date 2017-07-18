@@ -190,6 +190,7 @@ class Tweener():
         done_ids = []
         merged_to_elements = []
         for sub_from_element in from_element:
+            sub_to_element = None
             anim_tags = []
             group_merge_next = False
             eid = sub_from_element.attrib.get('id', None)
@@ -241,7 +242,7 @@ class Tweener():
             double_tween = False
             if _tagname(tagname) == "text":
                 # This is a text element
-                if sub_from_element.text != sub_to_element.text:
+                if sub_to_element is not None and sub_from_element.text != sub_to_element.text: 
                     # Oh no! text needs tweening
                     double_tween = True
             if double_tween:
@@ -283,7 +284,13 @@ class Tweener():
         element = self._tween_elements(from_svg.getroot(), to_svg.getroot())
         element.attrib['width'] = SVU.to_unit_val(self.maxwidth, self.widthunit)
         element.attrib['height'] = SVU.to_unit_val(self.maxheight, self.heightunit)
-        element.attrib['viewBox'] = SVU.to_viewbox_val(self.min_vb_left, self.min_vb_top, self.max_vb_width, self.max_vb_height)
+        if not all(value == 0 for value in [
+                self.max_vb_height,
+                self.max_vb_width,
+                self.min_vb_left,
+                self.min_vb_top
+            ]):
+            element.attrib['viewBox'] = SVU.to_viewbox_val(self.min_vb_left, self.min_vb_top, self.max_vb_width, self.max_vb_height)
         if extras is not None:
             for extra in extras:
                 element.append(extra)
