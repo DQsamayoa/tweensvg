@@ -90,7 +90,6 @@ class Tweener():
                 pass
         assert "id" not in anim_from, "Erm, something's really wrong, I can't animate an id attribute!?!?!?!?!?"
         return anim_from, anim_to
-            
 
     def _animate_tags_custom(self, from_attrs, to_attrs, begin=None, eid=None, dur=None):
         def common_attrs(animtag):
@@ -110,8 +109,10 @@ class Tweener():
             if attr == 'd':
                 from_path = SVU.path_parts(from_val)
                 to_path = SVU.path_parts(to_val)
-                from_paths, to_paths, from_id, to_id = SVU.split_paths_for_tweening(from_path, to_path)
-                from_paths, to_paths = SVU.normalize_path_splits(from_paths, to_paths, from_id, to_id)
+                from_paths, to_paths, from_id, to_id = SVU.split_paths_for_tweening(
+                    from_path, to_path)
+                from_paths, to_paths = SVU.normalize_path_splits(
+                    from_paths, to_paths, from_id, to_id)
                 from_val = ' '.join(SVU.path_string(p) for p in from_paths)
                 to_val = ' '.join(SVU.path_string(p) for p in to_paths)
 
@@ -124,27 +125,27 @@ class Tweener():
                         to_args = to_transforms[trans_type]
                         if from_args != to_args:
                             animtag = Element("animateTransform",
-                                {
-                                    "attriuteType": "XML",
-                                    "attributeName": "transform",
-                                    "type": trans_type,
-                                    "from": from_args,
-                                    "to": to_args,
-                                    "dur": dur,
-                                    #"repeatCount": "indefinite"
-                                })
+                                              {
+                                                  "attriuteType": "XML",
+                                                  "attributeName": "transform",
+                                                  "type": trans_type,
+                                                  "from": from_args,
+                                                  "to": to_args,
+                                                  "dur": dur,
+                                                  #"repeatCount": "indefinite"
+                                              })
                             common_attrs(animtag)
                             yield animtag
             else:
                 animtag = Element("animate",
-                    {
-                        "attributeType": "XML",
-                        "attributeName": attr,
-                        "from": from_val,
-                        "to": to_val,
-                        "dur": dur,
-                        #"repeatCount": "indefinite"
-                    })
+                                  {
+                                      "attributeType": "XML",
+                                      "attributeName": attr,
+                                      "from": from_val,
+                                      "to": to_val,
+                                      "dur": dur,
+                                      #"repeatCount": "indefinite"
+                                  })
                 common_attrs(animtag)
                 yield animtag
 
@@ -172,7 +173,6 @@ class Tweener():
             return self._fade_out_animation(opacity, begin="tween_transition.begin")
         else:
             return self._fade_out_animation(opacity)
-
 
     def _fade_in_element(self, element, transition_phase=False):
         opacity = element.attrib.get("opacity", "1")
@@ -208,9 +208,12 @@ class Tweener():
                         if sub_to_element.tag == sub_from_element.tag:
                             if sub_to_element not in merged_to_elements:
                                 # Merge!
-                                from_attrs, to_attrs = self._attr_diff(sub_from_element.attrib, sub_to_element.attrib)
-                                anim_tags = self._animate_tags(from_attrs, to_attrs)
-                                tweened_sub_element = self._tween_elements(sub_from_element, sub_to_element, group_merge=True)
+                                from_attrs, to_attrs = self._attr_diff(
+                                    sub_from_element.attrib, sub_to_element.attrib)
+                                anim_tags = self._animate_tags(
+                                    from_attrs, to_attrs)
+                                tweened_sub_element = self._tween_elements(
+                                    sub_from_element, sub_to_element, group_merge=True)
                                 found = True
                                 merged_to_elements.append(sub_to_element)
                                 break
@@ -236,9 +239,11 @@ class Tweener():
                     tweened_sub_element = deepcopy(sub_from_element)
                     anim_tags = self._fade_out_element(tweened_sub_element)
                 else:
-                    from_attrs, to_attrs = self._attr_diff(sub_from_element.attrib, sub_to_element.attrib)
+                    from_attrs, to_attrs = self._attr_diff(
+                        sub_from_element.attrib, sub_to_element.attrib)
                     anim_tags = self._animate_tags(from_attrs, to_attrs)
-                    tweened_sub_element = self._tween_elements(sub_from_element, sub_to_element, group_merge=group_merge_next)
+                    tweened_sub_element = self._tween_elements(
+                        sub_from_element, sub_to_element, group_merge=group_merge_next)
             double_tween = False
             if _tagname(tagname) == "text":
                 # This is a text element
@@ -282,8 +287,12 @@ class Tweener():
 
     def _tween(self, from_svg, to_svg, extras=None):
         element = self._tween_elements(from_svg.getroot(), to_svg.getroot())
-        element.attrib['width'] = SVU.to_unit_val(self.maxwidth, self.widthunit)
-        element.attrib['height'] = SVU.to_unit_val(self.maxheight, self.heightunit)
+        element.attrib['width'] = SVU.to_unit_val(
+            self.maxwidth, self.widthunit)
+        element.attrib['height'] = SVU.to_unit_val(
+            self.maxheight, self.heightunit)
+        element.attrib['viewBox'] = SVU.to_viewbox_val(
+            self.min_vb_left, self.min_vb_top, self.max_vb_width, self.max_vb_height)
         if not all(value == 0 for value in [
                 self.max_vb_height,
                 self.max_vb_width,
@@ -308,7 +317,8 @@ class Tweener():
             replacements = {}
             for attr in element.attrib:
                 if not "{" in attr:
-                    replacements[attr] = "{http://www.w3.org/2000/svg}%s" % (attr)
+                    replacements[attr] = "{http://www.w3.org/2000/svg}%s" % (
+                        attr)
             for replace, with_this in replacements.items():
                 element.attrib[with_this] = element.attrib[replace]
                 del element.attrib[replace]
@@ -318,9 +328,10 @@ class Tweener():
         # Create an invisible dummy element to contain
         # root animations for synchronisation
         invisible = Element("g", {"opacity": "0"})
-        text = Element("text", {"y": "20", "opacity":"0"})
+        text = Element("text", {"y": "20", "opacity": "0"})
         text.text = "Test"
-        common_attrs = {"attributeName": "opacity", "attributeType": "XML", "from":"0", "to":"1"}
+        common_attrs = {"attributeName": "opacity",
+                        "attributeType": "XML", "from": "0", "to": "1"}
         fadeout_attribs = {"id": "tween_fadeout",
                            "begin": "0s",
                            "dur": self.fadeout_duration,
@@ -336,7 +347,7 @@ class Tweener():
         if self.fadeout_early:
             # Delay the main transitions until fadout had ended
             transition_attribs['begin'] = "tween_fadeout.end"
-        if self.fadein_late:    
+        if self.fadein_late:
             fadein_attribs['begin'] = "tween_transition.end"
 
         start_fadein = Element("animate", fadein_attribs)
@@ -354,4 +365,3 @@ class Tweener():
             tween = self._tween(a, b, extras=[sync_element])
             self._namespace_fixup([tween.getroot()])
             yield tween
-            
