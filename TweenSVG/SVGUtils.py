@@ -7,6 +7,14 @@
 import re
 
 
+def minimal_float_str(float_val):
+    str_value = "%f" % (float(float_val))
+    while str_value[-1] == '0' and str_value[-2] != '.':
+        str_value = str_value[0:-1]
+    if str_value[-2:] == '.0':
+        str_value = str_value[0:-2]
+    return str_value
+
 class SVGUtils():
     """
         Utilities class containing functions for parsing and
@@ -28,18 +36,14 @@ class SVGUtils():
     @staticmethod
     def to_unit_val(value, unit):
         """ Take a floating point value and a string unit and return an SVG dimension string """
-        str_value = "%f" % (value)
-        while str_value[-1] == '0' and str_value[-2] != '.':
-            str_value = str_value[0:-1]
-        if str_value[-2:] == '.0':
-            str_value = str_value[0:-2]
+        str_value = minimal_float_str(value)
         return "%s%s" % (str_value, unit)
 
     @staticmethod
     def viewbox_vals(string):
         """ Parse an SVG viewbox string and return a 4-tuple of (left, top, widht, height) floats """
         m = re.match(
-            r"(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*) *[, ] *(\d+(?:\.\d)?\d*)", string)
+            r"(-?\d+(?:\.\d)?\d*) *[, ] *(-?\d+(?:\.\d)?\d*) *[, ] *(-?\d+(?:\.\d)?\d*) *[, ] *(-?\d+(?:\.\d)?\d*)", string)
         if not m:
             raise ValueError("invalid viewbox string")
         groups = m.groups()
@@ -48,7 +52,7 @@ class SVGUtils():
     @staticmethod
     def to_viewbox_val(left, top, width, height):
         """ Return an SVG viewbox string given floating point values for left, top, width and height """
-        return "%f %f %f %f" % (left, top, width, height)
+        return " ".join(minimal_float_str(val) for val in [left, top, width, height])
 
     @staticmethod
     def transforms(string):
@@ -66,24 +70,29 @@ class SVGUtils():
         That means this is valid: "h 1"
         something like the c command is more complicated. num_args_for_path_command("c") == [2,2,2]
         That means this is valid: "c 1,2 3,4 5,6" (three groups of 2)  """
-        return {
-            "m": [2],
-            "l": [2],
-            "h": [1],
-            "v": [1],
-            "c": [2, 2, 2],
-            "s": [2, 2],
-            "q": [2, 2],
-            "t": [2],
-            "a": [7],
-        }[command.lower()]
+        try:
+            return {
+                "m": [2],
+                "l": [2],
+                "h": [1],
+                "v": [1],
+                "c": [2, 2, 2],
+                "s": [2, 2],
+                "q": [2, 2],
+                "t": [2],
+                "a": [7],
+                "z": [0]
+            }[command.lower()]
+        except KeyError:
+            # It's not really a keyerror, it's a value error
+            raise ValueError
 
     @staticmethod
     def path_parts(string):
         """ Given an SVG path string (the 'd' attribute of a <path> tag) return a list of parts of a path.
         Each part is a tuple (command, args) where command is a single character string representing the command and args is a list of strings """
         output = []
-        commands = "MLlHhVvCcSsQqTtAaZz"
+        commands = "MmLlHhVvCcSsQqTtAaZz"
         remaining = string.strip()
         remaining = ''.join(
             [char if char != ',' else ' ' for char in remaining])
@@ -93,9 +102,14 @@ class SVGUtils():
         while remaining:
             first = remaining[0]
             if first in commands:
+                if this_args != []:
+                    # Started new command before previous one complete
+                    raise ValueError("Invalid SVG oath command sequence")
                 cur_command = first
                 num_args = SVGUtils.num_args_for_path_command(cur_command)
                 remaining = remaining[1:].strip()
+                if cur_command in "Zz":
+                    output.append((cur_command, []))
                 continue
             m = re.match("^([-+]?\d+(?:\.\d)?\d*).*", remaining)
             if not m:
@@ -115,9 +129,13 @@ class SVGUtils():
             argnums = SVGUtils.num_args_for_path_command(command)
             assert len(args) == sum(argnums)
             output.append(command)
+            arglist = []
             for num in argnums:
                 this_args, args = args[0:num], args[num:]
-                output.append(','.join(this_args))
+                if this_args:
+                    arglist.append(' '.join(this_args))
+            if arglist:
+                output.append(", ".join(arglist))
         return ' '.join(output)
 
     def path_end_point(parts):
@@ -125,29 +143,29 @@ class SVGUtils():
         pos = 0, 0
         for command, args in parts:
             if command in ['M', 'L', 'T']:
-                pos = args[0], args[1]
+                pos = float(args[0]), float(args[1])
             if command in ['m', 'l', 't']:
-                pos = pos[0] + args[0], pos[1] + args[1]
+                pos = pos[0] + float(args[0]), pos[1] + float(args[1])
             if command == 'H':
-                pos = args[0], pos[1]
+                pos = float(args[0]), pos[1]
             if command == 'h':
-                pos = pos[0] + args[0], pos[1]
+                pos = pos[0] + float(args[0]), pos[1]
             if command == 'V':
-                pos = pos[0], args[0]
+                pos = pos[0], float(args[0])
             if command == 'v':
-                pos = pos[0], pos[1] + args[0]
+                pos = pos[0], pos[1] + float(args[0])
             if command == 'C':
-                pos = args[4], args[5]
+                pos = float(args[4]), float(args[5])
             if command == 'c':
-                pos = pos[0] + args[4], pos[1] + args[5]
+                pos = pos[0] + float(args[4]), pos[1] + float(args[5])
             if command in ['S', 'Q']:
-                pos = args[2], args[3]
+                pos = float(args[2]), float(args[3])
             if command in ['s', 'q']:
-                pos = pos[0] + args[2], pos[1] + args[3]
+                pos = pos[0] + float(args[2]), pos[1] + float(args[3])
             if command == 'A':
-                pos = args[5], args[6]
+                pos = float(args[5]), float(args[6])
             if command == 'a':
-                pos = pos[0] + args[5], pos[1] + args[6]
+                pos = pos[0] + float(args[5]), pos[1] + float(args[6])
         return pos
 
     def path_to_point(parts, point):
@@ -155,31 +173,31 @@ class SVGUtils():
         Take a list of path parts (in the same format as output by path_parts()) and produce a new path with the same types of segments where all points are collapsed into the point specified in point (a tuple of two floats (x, y))
          """
         newpath = []
+        point = str(point[0]), str(point[1])
         for command, args in parts:
             if command in ['M', 'L', 'T']:
                 newpath.append((command, list(point)))
             if command in ['m', 'l', 't']:
-                newpath.append((command, [0, 0]))
+                newpath.append((command, ['0', '0']))
             if command == 'H':
                 newpath.append((command, point[0]))
             if command == 'V':
                 newpath.append((command, point[1]))
             if command in ['h', 'v']:
-                newpath.append((command, 0))
+                newpath.append((command, ['0']))
             if command == 'C':
                 newpath.append(
                     (command, list(point) + list(point) + list(point)))
             if command == 'c':
-                newpath.append(
-                    (command, list(point) + list(point) + [args[4], args[5]]))
+                newpath.append((command, ['0', '0', '0', '0', '0', '0']))
             if command in ['S', 'Q']:
                 newpath.append((command, list(point) + list(point)))
             if command in ['s', 'q']:
-                newpath.append((command, list(point) + [args[2], args[3]]))
+                newpath.append((command, ['0', '0', '0', '0',]))
             if command == 'A':
-                newpath.append((command, args[0:4] + list(point)))
+                newpath.append((command, args[0:4+1] + list(point)))
             if command == 'a':
-                newpath.append((command, args[0:4] + [0, 0]))
+                newpath.append((command, args[0:4+1] + ['0', '0']))
         return newpath
 
     def split_paths_for_tweening(path1, path2):
@@ -214,7 +232,7 @@ class SVGUtils():
 
     def normalize_path_split_lists(paths1, paths2, p1id, p2id):
         """ Take path lists and IDs such as those output by the split_paths_for_tweening() function and 'normalize' them by padding the lists with Nones so that the specified indexes line up and the path lists are of equal length. For example normalize_path_split_lists([A, B, C], [D], 1, 0) == ([A, B, C], [None, D, None])"""
-        if len(paths1) == len(paths2):
+        if len(paths1) == len(paths2) and p1id == p2id:
             return paths1, paths2
 
         diff = p1id - p2id
