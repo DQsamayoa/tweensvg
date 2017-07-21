@@ -52,10 +52,10 @@ class SVGUtils():
 
     @staticmethod
     def transforms(string):
-        """ Parse an SVG transform string and return a dict of transforms where the keys are names of transforms and the values are the arguments of the transforms """
+        """ Parse an SVG transform string and return a list of tuples of transforms. The tuples are of the form (trasform_type, args), both are strings, the args string is not parsed further and is provided as-is"""
         matches = re.findall(
-            r"(translate|rotate|scale|matrix|skew(?:x|y))\(([^)]+)\)", string)
-        return {transform: args for transform, args in matches}
+            r"(translate|rotate|scale|matrix|skew(?:x|y))\(([^)]+)\)", string, flags=re.IGNORECASE)
+        return [(transform, args) for transform, args in matches]
 
     @staticmethod
     def num_args_for_path_command(command):

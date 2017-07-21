@@ -120,19 +120,20 @@ class Tweener():
                 # Transforms are handled with animateTransform tags
                 from_transforms = SVU.transforms(from_val)
                 to_transforms = SVU.transforms(to_val)
-                for trans_type, from_args in from_transforms.items():
-                    if trans_type in to_transforms:
-                        to_args = to_transforms[trans_type]
+                if len(from_transforms) == len(to_transforms):
+                
+                    for (from_type, from_args), (to_type, to_args) in zip(from_transforms, to_transforms):
+                        if from_type != to_type:
+                            break
                         if from_args != to_args:
                             animtag = Element("animateTransform",
                                               {
                                                   "attriuteType": "XML",
                                                   "attributeName": "transform",
-                                                  "type": trans_type,
+                                                  "type": from_type,
                                                   "from": from_args,
                                                   "to": to_args,
                                                   "dur": dur,
-                                                  #"repeatCount": "indefinite"
                                               })
                             common_attrs(animtag)
                             yield animtag
