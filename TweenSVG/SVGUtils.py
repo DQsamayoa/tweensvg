@@ -227,8 +227,8 @@ class SVGUtils():
                              ] + path2[len(path1):]
                 return [path1], [p2_first, p2_second], 0, 0
         # TODO handle other cases
-        raise
-        return [path1], [path2], None, None
+        raise Exception("This feature is not yet implemented")
+        #return [path1], [path2], None, None
 
     def normalize_path_split_lists(paths1, paths2, p1id, p2id):
         """ Take path lists and IDs such as those output by the split_paths_for_tweening() function and 'normalize' them by padding the lists with Nones so that the specified indexes line up and the path lists are of equal length. For example normalize_path_split_lists([A, B, C], [D], 1, 0) == ([A, B, C], [None, D, None])"""
