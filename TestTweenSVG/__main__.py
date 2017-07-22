@@ -3,14 +3,15 @@ Test suite for TweenSVG
 """
 import sys 
 import unittest
-from TestTweenSVG import SVGUtilsTests
+from TestTweenSVG import SVGUtilsTests, ModuleTests
 
 def run_tests():
     """ 
         Run all of the tests and return true if successful, false otherwise
     """
     tests = [ 
-        SVGUtilsTests.SVGUtilsTests
+        SVGUtilsTests.SVGUtilsTests,
+        ModuleTests.ModuleTests
     ]   
 
     loader = unittest.TestLoader()
