@@ -6,18 +6,23 @@ from TweenSVG import AnimationGenerator
 from itertools import chain
 from xml.etree.ElementTree import Element
 
-def elements_equal(el1: Element, el2: Element):
-    print(el1)
-    print(el2)
-    if any([
-            el1.tag != el2.tag,
-            el1.text != el2.text,
-            el1.tail != el2.tail,
-            el1.attrib != el2.attrib,
-            any(not elements_equal(child1, child2) for child1, child2 in zip(el1.getchildren(), el2.getchildren()))
-        ]):
-        return False
-    return True
+def element_diff(el1: Element, el2: Element):
+    for attrname in [
+            "tag",
+            "text",
+            "tail",
+            "attrib"
+        ]:
+        attr1 = getattr(el1, attrname)
+        attr2 = getattr(el2, attrname)
+        if attr1 != attr2:
+            return False, "%s differs: `%s` != `%s`" % (attrname, attr1, attr2)
+    for index, (child1, child2) in enumerate(zip(el1.getchildren(), el2.getchildren())):
+        equal, difftext = element_diff(child1, child2)
+        if not equal:
+            return False, "Child %d differs: %s" % (index, difftext)
+    return True, None
+    
 
 class AnimationGeneratorTests(unittest.TestCase):
     """ 
@@ -32,16 +37,32 @@ class AnimationGeneratorTests(unittest.TestCase):
             (
                 {"width": "4px"},
                 {"width": "10px"},
-                [Element("animate", {"from": "4px",
+                [Element("animate", {"id":"tween_0",
+                                     "from": "4px",
                                      "to": "10px",
+                                     "dur": "5s",
                                      "attributeName": "width",
                                      "attributeType": "XML",
-                                     "begin": ""})]
+                                     "fill": "freeze",
+                                     "begin": "tween_transition.begin"})]
+            ),
+            (
+                {"transform": "scale(1)"},
+                {"transform": "scale(20)"},
+                [Element("animateTransform", {"id":"tween_1",
+                                              "from": "1",
+                                              "to": "2",
+                                              "type": "scale",
+                                              "dur": "5s",
+                                              "attributeName": "transform",
+                                              "attributeType": "XML",
+                                              "fill": "freeze",
+                                              "begin": "tween_transition.begin"})]
             )
         ]
         uut = AnimationGenerator.AnimationGenerator("5s")
         for from_val, to_val, expected_outputs in test_vector:
             outputs = list(uut.animate_tags(from_val, to_val))
             for output, expected_output in zip(outputs, expected_outputs):
-                print(output)
-                self.assertTrue(elements_equal(output, expected_output))
+                equal, difftext = element_diff(output, expected_output)
+                self.assertTrue(equal, msg=difftext)

@@ -9,17 +9,6 @@ from TweenSVG.SVGUtils import SVGUtils as SVU
 
 ElementTreeModule.register_namespace('', "http://www.w3.org/2000/svg")
 
-def pairwise(iterable):
-    a, b = itertools.tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-def _tagname(tag):
-    m = re.match("^(?:\{[^{]*})?(.*)$", tag)
-    if not m:
-        raise ValueError("Not a valid [namespaced] xml tag name")
-    return m.groups()[0]
-
 class AnimationGenerator():
     def __init__(self, duration="5s", fadein_late=False, fadeout_early=False):
         self.animation_number = 0
