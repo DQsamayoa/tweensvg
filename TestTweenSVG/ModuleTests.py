@@ -1,0 +1,90 @@
+"""
+    Test the TweenSVG module
+"""
+import unittest
+from tempfile import NamedTemporaryFile
+import TweenSVG
+from itertools import chain
+from xml.etree.ElementTree import ElementTree
+
+
+class ModuleTests(unittest.TestCase):
+    """ 
+        Test class for SVGUtils class
+    """
+
+    BASIC_FRAME_1 = r"""
+        <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+        <svg
+           xmlns="http://www.w3.org/2000/svg"
+           version="1.1"
+           id="svg4989"
+           viewBox="0 0 354.33071 354.33071"
+           height="100mm"
+           width="100mm">
+          <g
+             transform="translate(0,-698.0315)"
+             id="layer1">
+            <ellipse
+               ry="46.467018" rx="45.961941"
+               cy="778.6109" cx="74.246216"
+               id="path5556"
+               style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+            <ellipse
+               ry="52.022858" rx="49.497475"
+               cy="971.04492" cx="73.741135"
+               id="path5558"
+               style="fill:#ffff00;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+            <ellipse
+               ry="52.527931" rx="50.002552"
+               cy="777.60077" cx="279.30722"
+               id="path5560"
+               style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+          </g>
+        </svg>
+    """
+    BASIC_FRAME_2 = r"""
+        <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+        <svg
+           xmlns="http://www.w3.org/2000/svg"
+           version="1.1"
+           id="svg4989"
+           viewBox="0 0 354.33071 354.33071"
+           height="100mm"
+           width="100mm">
+          <g
+             transform="translate(0,-698.0315)"
+             id="layer1">
+            <ellipse
+               ry="52.022858" rx="49.497475"
+               cy="762.58221" cx="289.4693"
+               id="path5558"
+               style="fill:#ffff00;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+            <ellipse
+               ry="52.527931" rx="50.002552"
+               cy="976.0036" cx="74.1978"
+               id="path5560"
+               style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+            <ellipse
+               ry="46.467018" rx="45.961941"
+               cy="977.6109" cx="277.79196"
+               id="path5556-3"
+               style="fill:#00ff00;fill-opacity:1;stroke:none;stroke-width:14.17300034;stroke-miterlimit:4;stroke-dasharray:none" />
+          </g>
+        </svg>
+    """
+    def __init__(self, args):
+        unittest.TestCase.__init__(self, args)
+        self.uut = TweenSVG
+
+    def test_tween_svgs_from_filenames(self):
+        with NamedTemporaryFile(mode="w+") as file1, NamedTemporaryFile(mode="w+") as file2:
+            file1.write(ModuleTests.BASIC_FRAME_1.strip())
+            file1.flush()
+            file2.write(ModuleTests.BASIC_FRAME_2.strip())
+            file2.flush()
+            tweens = TweenSVG.tween_svgs_from_filenames([file1.name, file2.name])
+            for tween in tweens:
+                self.assertIsInstance(tween, ElementTree)
+
+
