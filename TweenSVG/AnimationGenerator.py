@@ -73,7 +73,7 @@ class AnimationGenerator():
                         if from_args != to_args:
                             animtag = Element("animateTransform",
                                               {
-                                                  "attriuteType": "XML",
+                                                  "attributeType": "XML",
                                                   "attributeName": "transform",
                                                   "type": from_type,
                                                   "from": from_args,

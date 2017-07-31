@@ -51,7 +51,7 @@ class AnimationGeneratorTests(unittest.TestCase):
                 {"transform": "scale(20)"},
                 [Element("animateTransform", {"id":"tween_1",
                                               "from": "1",
-                                              "to": "2",
+                                              "to": "20",
                                               "type": "scale",
                                               "dur": "5s",
                                               "attributeName": "transform",
