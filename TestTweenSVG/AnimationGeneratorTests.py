@@ -58,6 +58,18 @@ class AnimationGeneratorTests(unittest.TestCase):
                                               "attributeType": "XML",
                                               "fill": "freeze",
                                               "begin": "tween_transition.begin"})]
+            ),
+            (
+                {"d": "M0 0L1 1"},
+                {"d": "M0 0L1 2"},
+                [Element("animate", {"id":"tween_2",
+                                     "from": "M 0 0 L 1 1",
+                                     "to": "M 0 0 L 1 2",
+                                     "dur": "5s",
+                                     "attributeName": "d",
+                                     "attributeType": "XML",
+                                     "fill": "freeze",
+                                     "begin": "tween_transition.begin"})]
             )
         ]
         uut = AnimationGenerator.AnimationGenerator("5s")

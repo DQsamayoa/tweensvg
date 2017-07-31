@@ -73,24 +73,6 @@ class Tweener():
     def add_keyframe_from_file(self, filename):
         self.add_keyframe(parse(filename))
 
-    def _attr_diff(self, from_attrs, to_attrs):
-        anim_from = {}
-        anim_to = {}
-        for from_attr in from_attrs:
-            to_attr_val = to_attrs.get(from_attr, None)
-            if from_attrs[from_attr] != to_attr_val:
-                anim_from[from_attr] = from_attrs[from_attr]
-                anim_to[from_attr] = to_attr_val
-            if to_attr_val is None:
-                # Attribute has gone :(
-                pass
-        for to_attr in to_attrs:
-            if to_attr not in anim_from:
-                # Attribute has appeared :S
-                pass
-        assert "id" not in anim_from, "Erm, something's really wrong, I can't animate an id attribute!?!?!?!?!?"
-        return anim_from, anim_to
-    
     def _tween_elements(self, from_element: Element, to_element: Element, group_merge=False):
         result_element = Element(from_element.tag, from_element.attrib)
         result_element.text = from_element.text
@@ -148,7 +130,7 @@ class Tweener():
                     tweened_sub_element = deepcopy(sub_from_element)
                     anim_tags = self.anim_gen.fade_out_element(tweened_sub_element)
                 else:
-                    from_attrs, to_attrs = self._attr_diff(
+                    from_attrs, to_attrs = self.anim_gen.attr_diff(
                         sub_from_element.attrib, sub_to_element.attrib)
                     anim_tags = self.anim_gen.animate_tags(from_attrs, to_attrs)
                     tweened_sub_element = self._tween_elements(
