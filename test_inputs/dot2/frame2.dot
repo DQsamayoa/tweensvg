@@ -1,0 +1,5 @@
+digraph frame{
+
+    n [id=node1, color=red, style=dashed];
+
+}
