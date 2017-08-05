@@ -339,6 +339,8 @@ class SVGUtilsTests(unittest.TestCase):
             (([path_m_v_h, path_m, path_m_l],[path_m_l_c, path_m2], 1, 1),
                 ([path_m_v_h, path_m, path_m_l],[path_m_l_c, path_m2, None])),
             (([path_m_v_h, path_m, path_m_l],[path_m3, path_m_l_c, path_m2], 1, 2),
+                ([None, path_m_v_h, path_m, path_m_l],[path_m3, path_m_l_c, path_m2, None])),
+            (([path_m_v_h, path_m, path_m_l],[path_m3, path_m_l_c, path_m2], 1, 2),
                 ([None, path_m_v_h, path_m, path_m_l],[path_m3, path_m_l_c, path_m2, None]))
         ]
         for input_val, expected_output in test_vector:

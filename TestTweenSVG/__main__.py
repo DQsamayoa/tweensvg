@@ -3,7 +3,7 @@ Test suite for TweenSVG
 """
 import sys 
 import unittest
-from TestTweenSVG import SVGUtilsTests, ModuleTests, AnimationGeneratorTests
+from TestTweenSVG import SVGUtilsTests, ModuleTests, AnimationGeneratorTests, TweenerTests
 
 def run_tests():
     """ 
@@ -12,6 +12,7 @@ def run_tests():
     tests = [ 
         SVGUtilsTests.SVGUtilsTests,
         ModuleTests.ModuleTests,
+        TweenerTests.TweenerTests,
         AnimationGeneratorTests.AnimationGeneratorTests
     ]   
 

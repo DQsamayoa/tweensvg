@@ -91,7 +91,7 @@ class Tweener():
                 if not group_merge:
                     # Cannot tween, just fade out
                     tweened_sub_element = deepcopy(sub_from_element)
-                    anim_tags = self._fade_out_element(tweened_sub_element)
+                    anim_tags = self.anim_gen.fade_out_element(tweened_sub_element)
                 else:
                     found = False
                     # Try to merge this with something from the "to" elements
@@ -99,7 +99,7 @@ class Tweener():
                         if sub_to_element.tag == sub_from_element.tag:
                             if sub_to_element not in merged_to_elements:
                                 # Merge!
-                                from_attrs, to_attrs = self._attr_diff(
+                                from_attrs, to_attrs = self.anim_gen.attr_diff(
                                     sub_from_element.attrib, sub_to_element.attrib)
                                 anim_tags = self.anim_gen.animate_tags(
                                     from_attrs, to_attrs)

@@ -5,28 +5,7 @@ digraph frame{
     1 [id=node1];
     2 [id=node2];
     3 [id=node3];
-    4 [id=node4];
-    5 [id=node5];
-    10 [id=node10];
-    11 [id=node11];
-    12 [id=node12];
-    13 [id=node13];
-    14 [id=node14];
-    15 [id=node15];
-    1 -> 1 [id=edge_1_1];
     1 -> 2 [id=edge_1_2];
     1 -> 3 [id=edge_1_3];
-    1 -> 4 [id=edge_1_4];
-    1 -> 5 [id=edge_1_5];
-    4 -> 1 [id=edge_4_1];
-    3 -> 1 [id=edge_3_1];
-
-
-    3 -> 10 [id=edge_3_10];
-    4 -> 11 [id=edge_4_11];
-    3 -> 12 [id=edge_3_12];
-    5 -> 13 [id=edge_5_13];
-    3 -> 14 [id=edge_3_14];
-    6 -> 15 [id=edge_6_15];
-    12 -> 6 [id=edge_12_6];
+    2 -> 3 [id=edge_2_3];
 }

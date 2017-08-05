@@ -15,5 +15,3 @@ class TweenerTests(unittest.TestCase):
 
     def test_animate_tags_custom(self):
         TestTweener = self.uut()
-        TestTweener.animate_tags_custom(from_attrs, to_attrs)
-        pass
