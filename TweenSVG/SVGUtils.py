@@ -107,9 +107,9 @@ class SVGUtils():
                     raise ValueError("Invalid SVG oath command sequence")
                 cur_command = first
                 num_args = SVGUtils.num_args_for_path_command(cur_command)
-                remaining = remaining[1:].strip()
-                if cur_command in "Zz":
+                if num_args == [0]:
                     output.append((cur_command, []))
+                remaining = remaining[1:].strip()
                 continue
             m = re.match("^([-+]?\d+(?:\.\d)?\d*).*", remaining)
             if not m:
