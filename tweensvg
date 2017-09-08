@@ -4,7 +4,7 @@ import argparse
 from TweenSVG import tween_svgs_from_filenames
 from xml.etree import ElementTree as ElementTreeModule
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Generate Tweened SVGs given a set of keyframe SVGs.')
 parser.add_argument('--group-matching', action='store_true',
                     help='Animate sub-elements of matching groups even if the subelements don\'t match')
 parser.add_argument('--duration', default='5s', help='Duration of the animation')
