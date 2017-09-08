@@ -22,7 +22,7 @@ class AnimationGenerator():
         anim_from = {}
         anim_to = {}
         for from_attr in from_attrs:
-            to_attr_val = to_attrs.get(from_attr, None)
+            to_attr_val = to_attrs.get(from_attr, "")
             if from_attrs[from_attr] != to_attr_val:
                 anim_from[from_attr] = from_attrs[from_attr]
                 anim_to[from_attr] = to_attr_val
