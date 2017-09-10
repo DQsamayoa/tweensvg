@@ -132,19 +132,26 @@ class AnimationGenerator():
         text = Element("text", {"y": "20", "opacity": "0"})
         text.text = "Test"
         common_attrs = {"attributeName": "opacity",
-                        "attributeType": "XML", "from": "0", "to": "1"}
+                        "attributeType": "XML",
+                        "from": "0",
+                        "to": "1"
+                       }
         fadeout_attribs = {"id": "tween_fadeout",
                            "begin": "0s",
                            "dur": self.fadeout_duration,
-                           **common_attrs}
+                          }
         transition_attribs = {"id": "tween_transition",
                               "begin": "0s; tween_fadein.end",
                               "dur": self.duration,
-                              **common_attrs}
+                             }
         fadein_attribs = {"id": "tween_fadein",
                           "begin": "tween_transition.start",
                           "dur": self.fadein_duration,
-                          **common_attrs}
+                         }
+        # add the common attrs to all other attribute dicts
+        for attr_dict in [fadeout_attribs, transition_attribs, fadein_attribs]:
+            for key in common_attrs:
+                attr_dict[key] = common_attrs[key]
         if self.fadeout_early:
             # Delay the main transitions until fadout had ended
             transition_attribs['begin'] = "tween_fadeout.end"
