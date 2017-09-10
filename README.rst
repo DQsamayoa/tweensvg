@@ -2,6 +2,11 @@ TweenSVG
 
 An SVG tweening library for python
 
+.. image:: https://coveralls.io/repos/github/danieljabailey/tweensvg/badge.svg?branch=master
+    :target: https://coveralls.io/github/danieljabailey/tweensvg?branch=master
+.. image:: https://travis-ci.org/danieljabailey/tweensvg.svg?branch=master
+    :target: https://travis-ci.org/danieljabailey/tweensvg
+
 TODO - complete the readme
 
 This is really really early beta!
