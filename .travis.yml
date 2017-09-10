@@ -4,6 +4,13 @@
         "3.5",
         "3.6"
     ],
+    "addons": {
+        "apt": {
+            "packages":[
+                "graphviz"
+            ]
+        }
+    },
     "install": [
         "pip install -r requirements.txt",
         "pip install coveralls"
