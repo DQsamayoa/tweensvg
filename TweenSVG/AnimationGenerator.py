@@ -52,14 +52,11 @@ class AnimationGenerator():
             to_val = to_attrs[attr]
             # For path sequences, make the paths tweenable
             if attr == 'd':
-                from_path = SVU.path_parts(from_val)
-                to_path = SVU.path_parts(to_val)
-                from_paths, to_paths, from_id, to_id = SVU.split_paths_for_tweening(
-                    from_path, to_path)
-                from_paths, to_paths = SVU.normalize_path_splits(
-                    from_paths, to_paths, from_id, to_id)
-                from_val = ' '.join(SVU.path_string(p) for p in from_paths)
-                to_val = ' '.join(SVU.path_string(p) for p in to_paths)
+                from_parts = SVU.path_parts(from_val)
+                to_parts = SVU.path_parts(to_val)
+                from_parts, to_parts = SVU.tweenable_paths(from_parts, to_parts)
+                from_val = SVU.path_string(from_parts)
+                to_val = SVU.path_string(to_parts)
 
             if attr == 'transform':
                 # Transforms are handled with animateTransform tags

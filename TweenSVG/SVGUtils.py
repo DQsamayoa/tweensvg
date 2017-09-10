@@ -200,72 +200,82 @@ class SVGUtils():
                 newpath.append((command, args[0:4+1] + ['0', '0']))
         return newpath
 
-    def split_paths_for_tweening(path1, path2):
-        """
-            Take two lists of commands (from path_parts() function)
-            and make sure they are tweenable by splitting one of
-            them if needed.
-            Returns a 4-tuple (paths1, paths2, id1, id2) where paths1 and paths2 is a list of subpaths of path1 and path2 respectively and id1 and id2 are the indexes into each path which match each other exactly. Use "normalize_path_split_lists()" to create tweenable paths from these lists and indexes.
-        """
-        p1sequence = ''.join(command for command, _ in path1)
-        p2sequence = ''.join(command for command, _ in path2)
-        if p1sequence == p2sequence:
-            # Yay! No work to do, sequences already match
-            return [path1], [path2], 0, 0
-        if len(p2sequence) < len(p1sequence):
-            if p1sequence.startswith(p2sequence):
-                p1_first = path1[0:len(path2)]
-                endpos = SVGUtils.path_end_point(p1_first)
-                p1_second = [('M', [str(endpos[0]), str(endpos[1])])
-                             ] + path1[len(path2):]
-                return [p1_first, p1_second], [path2], 0, 0
-        else:
-            if p2sequence.startswith(p1sequence):
-                p2_first = path2[0:len(path1)]
-                endpos = SVGUtils.path_end_point(p2_first)
-                p2_second = [('M', [str(endpos[0]), str(endpos[1])])
-                             ] + path2[len(path1):]
-                return [path1], [p2_first, p2_second], 0, 0
-        # TODO handle other cases
-        raise Exception("This feature is not yet implemented")
-        #return [path1], [path2], None, None
+    def match_paths(l1, l2):
+        o1, o2 = [], [] # Outputs
+        i1, i2 = 0, 0 # Current index
+        si1, si2 = 0, 0 # For checking we advanced
 
-    def normalize_path_split_lists(paths1, paths2, p1id, p2id):
-        """ Take path lists and IDs such as those output by the split_paths_for_tweening() function and 'normalize' them by padding the lists with Nones so that the specified indexes line up and the path lists are of equal length. For example normalize_path_split_lists([A, B, C], [D], 1, 0) == ([A, B, C], [None, D, None])"""
-        if len(paths1) == len(paths2) and p1id == p2id:
-            return paths1, paths2
+        def add_paths(o, num, io):
+            """ Add `num` path parts to the path `o` starting at index `io`, returning the new index """
+            for i in range(num):
+                o.append(io)
+                io += 1
+            return io
 
-        diff = p1id - p2id
-        if diff < 0:
-            paths1 = ([None] * -diff) + paths1
-        else:
-            paths2 = ([None] * diff) + paths2
+        def add_gaps(o, num):
+            """ add `num` gaps to the path `o` """
+            o.extend([-1] * num)
 
-        diff2 = len(paths1) - len(paths2)
-        if diff2 == 0:
-            return paths1, paths2
+        try:
+            while True:
+                si1, si2 = i1, i2
+                if l1[i1] == l2[i2]:
+                    # Both same, add this path to both
+                    i1 = add_paths(o1, 1, i1)
+                    i2 = add_paths(o2, 1, i2)
+                else:
+                    # Different, get remaining path slice
+                    r1 = l1[i1:]
+                    r2 = l2[i2:]
+                    if l1[i1] not in r2:
+                        # If this isn't in the other one, just add to path now
+                        i1 = add_paths(o1, 1, i1)
+                        add_gaps(o2, 1)
+                    elif l2[i2] not in r1:
+                        # Same as above
+                        i2 = add_paths(o2, 1, i2)
+                        add_gaps(o1, 1)
+                    else:
+                        # Otherwise, pick the shortest distance to the next matching path part
+                        d1 = l2[i2:].index(l1[i1])
+                        d2 = l1[i1:].index(l2[i2])
+                        if d1 < d2:
+                            add_gaps(o1, 1)
+                            i2 = add_paths(o2, 1, i2)
+                        else:
+                            add_gaps(o2, 1)
+                            i1 = add_paths(o1, 1, i1)
+                assert (i1 != si1) or (i2 != si2)
+        except IndexError:
+            # Hit end of one of the strings, stop
+            pass
+        # Keep adding until each one is done (one of these loops won't do anything)
+        while i1 < len(l1):
+            i1 = add_paths(o1, 1, i1)
+            add_gaps(o2, 1)
+        while i2 < len(l2):
+            i2 = add_paths(o2, 1, i2)
+            add_gaps(o1, 1)
+        assert len(o1) == len(o2)
+        return o1, o2
 
-        if diff2 < 0:
-            paths1 += [None] * -diff2
-        else:
-            paths2 += [None] * diff2
+    def _indicies_to_path(indicies, path, fallback_indicies, fallback_path):
+        output = []
+        for index, fallback_index in zip(indicies, fallback_indicies):
+            if index >= 0:
+                part = path[index]
+                output.append(part)
+            else:
+                assert fallback_index >= 0
+                cur_end = SVGUtils.path_end_point(output)
+                otherpath = fallback_path[fallback_index]
+                output.extend(SVGUtils.path_to_point([otherpath], cur_end))
+        return output
 
-        return paths1, paths2
-
-    def normalize_path_splits(paths1, paths2, p1id, p2id):
-        """ Take path lists and IDs such as those output by the split_paths_for_tweening() function and turn them into lists of tweenable paths. This will fill in any None paths with paths that have been squashed to a single point. """
-        paths1, paths2 = SVGUtils.normalize_path_split_lists(
-            paths1, paths2, p1id, p2id)
-        for i, path in enumerate(paths1):
-            other = paths2[i]
-            prev = paths1[i - 1]
-            if path is None:
-                paths1[i] = SVGUtils.path_to_point(
-                    other, SVGUtils.path_end_point(prev))
-        for i, path in enumerate(paths2):
-            other = paths1[i]
-            prev = paths2[i - 1]
-            if path is None:
-                paths2[i] = SVGUtils.path_to_point(
-                    other, SVGUtils.path_end_point(prev))
-        return paths1, paths2
+    def tweenable_paths(path1, path2):
+        p1sequence = list(command for command, _ in path1)
+        p2sequence = list(command for command, _ in path2)
+        p1indicies, p2indicies = SVGUtils.match_paths(p1sequence, p2sequence)
+        p1out = SVGUtils._indicies_to_path(p1indicies, path1, p2indicies, path2)
+        p2out = SVGUtils._indicies_to_path(p2indicies, path2, p1indicies, path1)
+        return p1out, p2out
