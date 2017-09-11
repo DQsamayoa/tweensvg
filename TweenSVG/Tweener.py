@@ -18,8 +18,7 @@ def pairwise(iterable):
 
 def _tagname(tag):
     m = re.match("^(?:\{[^{]*})?(.*)$", tag)
-    if not m:
-        raise ValueError("Not a valid [namespaced] xml tag name")
+    assert m, "Not a valid [namespaced] xml tag name"
     return m.groups()[0]
 
 
@@ -111,7 +110,6 @@ class Tweener():
                     if not found:
                         # Couldn't merge, just fade out...
                         tweened_sub_element = deepcopy(sub_from_element)
-                        #anim_tags = self._fade_out_animation()
                         anim_tags = self._fade_out_element(tweened_sub_element)
             else:
                 done_ids.append(eid)

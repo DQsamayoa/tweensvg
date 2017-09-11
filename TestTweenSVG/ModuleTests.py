@@ -88,22 +88,36 @@ class ModuleTests(unittest.TestCase):
             for tween in tweens:
                 self.assertIsInstance(tween, ElementTree)
 
-    def test_tween_svgs_from_filenames2(self):
+    def try_tweening_files(self, files):
         for group, fadeout, fadein in itertools.product([True, False], repeat=3):
-            tweens = TweenSVG.tween_svgs_from_filenames([
-                "test_inputs/dot1/frame1.svg",
-                "test_inputs/dot1/frame2.svg",
-                "test_inputs/dot1/frame3.svg"
-            ], group_matching=group, fadeout_early=fadeout, fadein_late=fadein)
-            for tween in tweens:
-                self.assertIsInstance(tween, ElementTree)
+           tweens = TweenSVG.tween_svgs_from_filenames(files,
+                group_matching=group, fadeout_early=fadeout, fadein_late=fadein)
+           for tween in tweens:
+               self.assertIsInstance(tween, ElementTree)
+
+
+    def test_tween_svgs_from_filenames2(self):
+        self.try_tweening_files([
+            "test_inputs/dot1/frame1.svg",
+            "test_inputs/dot1/frame2.svg",
+            "test_inputs/dot1/frame3.svg"
+        ])
 
     def test_tween_svgs_from_filenames3(self):
-        for group, fadeout, fadein in itertools.product([True, False], repeat=3):
-            tweens = TweenSVG.tween_svgs_from_filenames([
-                "test_inputs/dot2/frame1.svg",
-                "test_inputs/dot2/frame2.svg"
-            ], group_matching=group, fadeout_early=fadeout, fadein_late=fadein)
-            for tween in tweens:
-                self.assertIsInstance(tween, ElementTree)
+        self.try_tweening_files([
+            "test_inputs/dot2/frame1.svg",
+            "test_inputs/dot2/frame2.svg"
+        ])
 
+    def test_tween_svgs_from_filenames4(self):
+        self.try_tweening_files([
+            "test_inputs/test1/frame1.svg",
+            "test_inputs/test1/frame2.svg"
+        ])
+
+    def test_tween_svgs_from_filenames5(self):
+        self.try_tweening_files([
+            "test_inputs/test2/frame1.svg",
+            "test_inputs/test2/frame2.svg",
+            "test_inputs/test2/frame3.svg"
+        ])

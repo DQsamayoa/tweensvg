@@ -96,8 +96,7 @@ class AnimationGenerator():
         return self.animate_tags_custom(from_attrs, to_attrs, begin="tween_transition.begin")
 
     def _fade_animation(self, direction, opacity, begin=None, dur=None):
-        if direction not in {-1, 1}:
-            raise ValueError("Direction must be 1 or -1")
+        assert direction in {-1, 1}, "Direction must be 1 or -1"
         (fromval, toval) = (opacity, "0") if direction == -1 else ("0", opacity)
         from_attr = {"opacity": fromval}
         to_attr = {"opacity": toval}
