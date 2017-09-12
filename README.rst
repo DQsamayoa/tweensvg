@@ -2,6 +2,8 @@ TweenSVG
 
 An SVG tweening library for python
 
+Released under the MIT licence, see LICENCE file for details.
+
 .. image:: https://coveralls.io/repos/github/danieljabailey/tweensvg/badge.svg?branch=master
     :target: https://coveralls.io/github/danieljabailey/tweensvg?branch=master
 .. image:: https://travis-ci.org/danieljabailey/tweensvg.svg?branch=master
