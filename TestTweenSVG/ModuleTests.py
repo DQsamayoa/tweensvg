@@ -121,3 +121,15 @@ class ModuleTests(unittest.TestCase):
             "test_inputs/test2/frame2.svg",
             "test_inputs/test2/frame3.svg"
         ])
+
+    def test_tween_svgs_from_filenames6(self):
+        self.try_tweening_files([
+            "test_inputs/test3/paths1.svg",
+            "test_inputs/test3/paths2.svg"
+        ])
+
+    def test_tween_svgs_from_filenames7(self):
+        self.try_tweening_files([
+            "test_inputs/test4/frame1.svg",
+            "test_inputs/test4/frame2.svg"
+        ])
