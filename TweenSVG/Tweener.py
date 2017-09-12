@@ -110,7 +110,7 @@ class Tweener():
                     if not found:
                         # Couldn't merge, just fade out...
                         tweened_sub_element = deepcopy(sub_from_element)
-                        anim_tags = self._fade_out_element(tweened_sub_element)
+                        anim_tags = self.anim_gen.fade_out_element(tweened_sub_element)
             else:
                 done_ids.append(eid)
                 if self.group_matching and _tagname(tagname) == 'g':
