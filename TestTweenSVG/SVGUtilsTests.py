@@ -165,7 +165,7 @@ class SVGUtilsTests(unittest.TestCase):
             "M 0,0": [("M", ["0", "0"])],
             "M 0,  0": [("M", ["0", "0"])],
             "M 0,0Z": [("M", ["0", "0"]), ("Z", [])],
-            "M 0, 0 0, 0": [("M", ["0", "0"]), ("M", ["0", "0"])],
+            "M 0, 0 0, 0 0, 0": [("M", ["0", "0"]), ("L", ["0", "0"]), ("L", ["0", "0"])],
             "M0,0 V8 C3,8 4,7 4,4 C4,1 3,0 0,0z": [
                 ("M", ["0", "0"]),
                 ("V", ["8"]),
@@ -199,6 +199,21 @@ class SVGUtilsTests(unittest.TestCase):
                 ("A", ["0", "0", "0", "0", "0", "0", "0"]),
                 ("a", ["0", "0", "0", "0", "0", "0", "0"]),
                 ("Z", []),
+            ],
+            # Lineto is implicit after a moveto command
+            "M0 0 10 10":[
+                ("M", ["0", "0"]),
+                ("L", ["10", "10"])
+            ],
+            "m0 0 10 10":[
+                ("m", ["0", "0"]),
+                ("l", ["10", "10"])
+            ],
+            "m0 0 10 10 M 0 10 10 0":[
+                ("m", ["0", "0"]),
+                ("l", ["10", "10"]),
+                ("M", ["0", "10"]),
+                ("L", ["10", "0"])
             ]
         }
         for input_value, expected_output in test_vector.items():
@@ -300,6 +315,25 @@ class SVGUtilsTests(unittest.TestCase):
                         self.uut.path_to_point(
                             self.uut.path_parts(input_val), point))
             self.assertEqual(output, expected_output)
+
+    def test_match_paths(self):
+        test_vector = [
+            ("Hello", "Hello"),
+            ("abcdef", "abcdefghij"),
+            ("abcdef", "defghij"),
+            ("abcdef", "ghij"),
+            ("ababab", "abcabab"),
+            ("abca", "acba"),
+            ("abaca", "acba"),
+            ("acba", "abaca")
+        ]
+        for path_a, path_b in test_vector:
+            out_a, out_b = self.uut.match_paths(path_a, path_b)
+            self.assertEqual(len(out_a), len(out_b), "match_paths returned different length lists")
+            orig_a = list(i for i in out_a if i >= 0)
+            orig_b = list(i for i in out_b if i >= 0)
+            self.assertEqual(orig_a, list(range(len(path_a))), "New path shape is different to old path shape")
+            self.assertEqual(orig_b, list(range(len(path_b))), "New path shape is different to old path shape")
 
     @staticmethod
     def _path_commands_match(path1, path2):

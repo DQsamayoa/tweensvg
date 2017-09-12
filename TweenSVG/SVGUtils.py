@@ -91,6 +91,7 @@ class SVGUtils():
     def path_parts(string):
         """ Given an SVG path string (the 'd' attribute of a <path> tag) return a list of parts of a path.
         Each part is a tuple (command, args) where command is a single character string representing the command and args is a list of strings """
+        TRANS_MOVETO = {ord("M"):"L", ord("m"):"l"}
         output = []
         commands = "MmLlHhVvCcSsQqTtAaZz"
         remaining = string.strip()
@@ -104,7 +105,7 @@ class SVGUtils():
             if first in commands:
                 if this_args != []:
                     # Started new command before previous one complete
-                    raise ValueError("Invalid SVG oath command sequence")
+                    raise ValueError("Invalid SVG path command sequence")
                 cur_command = first
                 num_args = SVGUtils.num_args_for_path_command(cur_command)
                 if num_args == [0]:
@@ -120,6 +121,9 @@ class SVGUtils():
             if len(this_args) == sum(num_args):
                 output.append((cur_command, this_args))
                 this_args = []
+                # If we get here and the current command is moveto
+                # then we implicitly start a lineto command
+                cur_command = cur_command.translate(TRANS_MOVETO)
         return output
 
     def path_string(parts):
