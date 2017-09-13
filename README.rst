@@ -6,8 +6,10 @@ Released under the MIT licence, see LICENCE file for details.
 
 .. image:: https://coveralls.io/repos/github/danieljabailey/tweensvg/badge.svg?branch=master
     :target: https://coveralls.io/github/danieljabailey/tweensvg?branch=master
+    :height: 40
 .. image:: https://travis-ci.org/danieljabailey/tweensvg.svg?branch=master
     :target: https://travis-ci.org/danieljabailey/tweensvg
+    :height: 40
 
 TODO - complete the readme
 
